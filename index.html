@@ -9,6 +9,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tesseract.js for OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
     <style>
         :root {
             --bg-color: #0d1117;
@@ -18,12 +21,10 @@
             --text-primary: #f0f6fc;
             --text-secondary: #8b949e;
             --accent-color: #238636;
-            /* Green for saving */
             --accent-hover: #2ea043;
             --danger-color: #da3633;
-            /* Red for spending */
-            --glass-bg: rgba(22, 27, 34, 0.7);
-            --glass-border: rgba(48, 54, 61, 0.5);
+            --glass-bg: rgba(22, 27, 34, 0.85);
+            --glass-border: rgba(48, 54, 61, 0.6);
             --neon-glow: 0 0 10px rgba(35, 134, 54, 0.3);
         }
 
@@ -38,150 +39,251 @@
             background-color: var(--bg-color);
             color: var(--text-primary);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 2rem;
             background-image: radial-gradient(circle at 10% 20%, rgba(35, 134, 54, 0.05) 0%, transparent 40%),
                 radial-gradient(circle at 90% 80%, rgba(31, 111, 235, 0.05) 0%, transparent 40%);
         }
 
+        /* --- LOGIN OVERLAY --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 17, 23, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .login-btn:hover {
+            background: var(--accent-hover);
+            box-shadow: var(--neon-glow);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- MAIN LAYOUT --- */
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 1200px;
+            margin: 0 auto;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
         }
 
-        /* Glassmorphism Card Style */
+        .header-section {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #fff, #8b949e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
         .card {
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border);
             border-radius: 16px;
-            padding: 2rem;
+            padding: 1.5rem;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .card:hover {
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        h1,
-        h2 {
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin-bottom: 1.5rem;
-        }
-
-        h1 {
-            grid-column: 1 / -1;
-            text-align: center;
-            font-size: 2.5rem;
-            background: linear-gradient(90deg, #fff, #8b949e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 2rem;
-        }
-
-        h2 {
-            font-size: 1.25rem;
-            color: var(--text-primary);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
-        }
-
-        .input-group {
-            margin-bottom: 1.25rem;
-        }
-
-        label {
-            display: block;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .input-wrapper {
-            position: relative;
-        }
-
-        .input-wrapper span {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        input[type="number"] {
-            width: 100%;
-            padding: 0.75rem 1rem 0.75rem 2rem;
-            /* Left padding for currency symbol */
-            background-color: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-size: 1rem;
-            transition: all 0.2s ease;
-        }
-
-        input[type="number"]:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(35, 134, 54, 0.1);
-        }
-
-        /* Results Section */
-        .results-section {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
         }
 
-        .result-card {
-            background-color: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-            border: 1px solid var(--border-color);
+        h2 {
+            font-size: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
         }
 
-        .result-label {
+        /* --- INPUTS & FORMS --- */
+        label {
+            display: block;
             font-size: 0.875rem;
             color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
         }
 
-        .result-value {
-            font-size: 2rem;
+        input,
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        button.action-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            transition: 0.2s;
+        }
+
+        button.action-btn:disabled {
+            background: var(--border-color);
+            cursor: not-allowed;
+        }
+
+        button.action-btn:hover:not(:disabled) {
+            background: var(--accent-hover);
+        }
+
+        /* --- HISTORY LIST --- */
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.75rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid var(--border-color);
+        }
+
+        .history-item.expense {
+            border-left-color: var(--danger-color);
+        }
+
+        .history-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-cat {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .history-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .history-amount {
             font-weight: 700;
             color: var(--text-primary);
         }
 
-        .value-positive {
+        /* --- OCR SECTION --- */
+        .ocr-section {
+            border: 2px dashed var(--border-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .ocr-section:hover {
+            border-color: var(--accent-color);
+            background: rgba(35, 134, 54, 0.05);
+        }
+
+        #ocr-status {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        /* --- RESULTS --- */
+        .result-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .result-val {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 0.25rem;
+        }
+
+        .val-pos {
             color: var(--accent-color);
             text-shadow: var(--neon-glow);
         }
 
-        .value-negative {
+        .val-neg {
             color: var(--danger-color);
         }
 
-        .summary-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .container {
                 grid-template-columns: 1fr;
             }
@@ -191,172 +293,392 @@
 
 <body>
 
-    <div class="container">
-        <h1>Monthly Spending Tracker</h1>
-
-        <!-- LEFT COLUMN: INPUTS -->
-        <div class="card inputs-column">
-            <h2>Income & Savings</h2>
-            <div class="input-group">
-                <label for="monthly-salary">Monthly Salary</label>
-                <div class="input-wrapper">
-                    <span>$</span>
-                    <input type="number" id="monthly-salary" placeholder="0.00" oninput="calculate()">
-                </div>
-            </div>
-            <div class="input-group">
-                <label for="current-savings">Current Savings</label>
-                <div class="input-wrapper">
-                    <span>$</span>
-                    <input type="number" id="current-savings" placeholder="0.00" oninput="calculate()">
-                </div>
-            </div>
-
-            <h2 style="margin-top: 2rem;">My Spendings</h2>
-
-            <div class="input-group">
-                <label for="expense-rent">Rent</label>
-                <div class="input-wrapper">
-                    <span>$</span>
-                    <input type="number" class="expense-input" id="expense-rent" placeholder="0.00"
-                        oninput="calculate()">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label for="expense-food">Food</label>
-                <div class="input-wrapper">
-                    <span>$</span>
-                    <input type="number" class="expense-input" id="expense-food" placeholder="0.00"
-                        oninput="calculate()">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label for="expense-transport">Transportation</label>
-                <div class="input-wrapper">
-                    <span>$</span>
-                    <input type="number" class="expense-input" id="expense-transport" placeholder="0.00"
-                        oninput="calculate()">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label for="expense-subs">Subscriptions</label>
-                <div class="input-wrapper">
-                    <span>$</span>
-                    <input type="number" class="expense-input" id="expense-subs" placeholder="0.00"
-                        oninput="calculate()">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label for="expense-bills">Electricity/Bills</label>
-                <div class="input-wrapper">
-                    <span>$</span>
-                    <input type="number" class="expense-input" id="expense-bills" placeholder="0.00"
-                        oninput="calculate()">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label for="expense-entertainment">Entertainment</label>
-                <div class="input-wrapper">
-                    <span>$</span>
-                    <input type="number" class="expense-input" id="expense-entertainment" placeholder="0.00"
-                        oninput="calculate()">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label for="expense-others">Others</label>
-                <div class="input-wrapper">
-                    <span>$</span>
-                    <input type="number" class="expense-input" id="expense-others" placeholder="0.00"
-                        oninput="calculate()">
-                </div>
-            </div>
-        </div>
-
-        <!-- RIGHT COLUMN: RESULTS -->
-        <div class="card results-column">
-            <h2>Financial Overview</h2>
-            <div class="results-section">
-
-                <div class="result-card">
-                    <div class="result-label">Total Expenses</div>
-                    <div class="result-value value-negative" id="total-expenses">$0.00</div>
-                </div>
-
-                <div class="result-card">
-                    <div class="result-label">Remaining from Salary</div>
-                    <div class="result-value" id="remaining-salary">$0.00</div>
-                </div>
-
-                <div class="result-card"
-                    style="border-color: var(--accent-color); background: rgba(35, 134, 54, 0.05);">
-                    <div class="result-label" style="color: var(--accent-color);">New Total Savings</div>
-                    <div class="result-value value-positive" id="new-savings">$0.00</div>
-                </div>
-
-                <div class="summary-grid">
-                    <div class="result-card">
-                        <div class="result-label">Salary</div>
-                        <div class="result-value" id="display-salary" style="font-size: 1.25rem;">$0.00</div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-label">Initial Savings</div>
-                        <div class="result-value" id="display-initial-savings" style="font-size: 1.25rem;">$0.00</div>
-                    </div>
-                </div>
-
-            </div>
+    <!-- LOGIN -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <h1 style="font-size: 1.75rem; margin-bottom: 1rem;">Welcome Back</h1>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Secure Access to Your Finance Tracker</p>
+            <input type="password" id="login-password" placeholder="Enter PIN (Demo: 1234)">
+            <label
+                style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1rem; cursor: pointer;">
+                <input type="checkbox" id="remember-me" style="width: auto; margin: 0;"> Remember Me
+            </label>
+            <button class="login-btn" onclick="attemptLogin()">Access Dashboard</button>
+            <p id="login-error" style="color: var(--danger-color); margin-top: 1rem; display: none;">Invalid PIN</p>
         </div>
     </div>
 
+    <!-- APP CONTENT -->
+    <div class="container" id="app-container">
+
+        <div class="header-section">
+            <h1>Spending Tracker</h1>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <select id="month-selector" onchange="renderHistory()" style="width: 150px; margin: 0;">
+                    <!-- JS fills this -->
+                </select>
+                <button onclick="logout()"
+                    style="background: none; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">Logout</button>
+            </div>
+        </div>
+
+        <!-- LEFT COL: INPUTS -->
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
+
+            <!-- User Profile -->
+            <div class="card">
+                <h2>Monthly Profile</h2>
+                <div class="row">
+                    <div class="col">
+                        <label>Monthly Salary</label>
+                        <input type="number" id="salary-input" placeholder="0.00" onchange="updateProfile()">
+                    </div>
+                    <div class="col">
+                        <label>Current Savings</label>
+                        <input type="number" id="savings-input" placeholder="0.00" onchange="updateProfile()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Transaction Form -->
+            <div class="card">
+                <h2>Add Spending</h2>
+
+                <div class="row">
+                    <div class="col">
+                        <label>Category</label>
+                        <select id="trans-category" onchange="handleCategoryChange()">
+                            <option value="Rent">Rent</option>
+                            <option value="Food">Food</option>
+                            <option value="Transportation">Transportation</option>
+                            <option value="Subscriptions">Subscriptions</option>
+                            <option value="Bills">Electricity/Bills</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Sub-Category for Food -->
+                <div id="sub-category-wrapper" class="hidden">
+                    <label>Food Type</label>
+                    <select id="trans-subcategory">
+                        <option value="Groceries">Groceries</option>
+                        <option value="Restaurant">Restaurant</option>
+                        <option value="Takeout">Takeout</option>
+                        <option value="Snacks">Snacks</option>
+                        <option value="Drinks">Drinks</option>
+                    </select>
+                </div>
+
+                <!-- Custom Desc for Others -->
+                <div id="custom-desc-wrapper" class="hidden">
+                    <label>Description</label>
+                    <input type="text" id="trans-desc" placeholder="e.g. Bought new shoes">
+                </div>
+
+                <label>Amount</label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 1rem; top: 12px; color: var(--text-secondary);">$</span>
+                    <input type="number" id="trans-amount" placholder="0.00" style="padding-left: 2rem;">
+                </div>
+
+                <button class="action-btn" onclick="addTransaction()">Add Transaction</button>
+            </div>
+
+            <!-- OCR Upload -->
+            <div class="card">
+                <h2>Import Statement (OCR)</h2>
+                <div class="ocr-section" onclick="document.getElementById('ocr-upload').click()">
+                    <p style="font-weight: 600;">Click to Upload Image</p>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary);">Scans for negative values (e.g. -$50.00)
+                    </p>
+                    <input type="file" id="ocr-upload" accept="image/*" style="display: none;"
+                        onchange="processOCR(this)">
+                </div>
+                <div id="ocr-status"></div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COL: HISTORY & SUMMARY -->
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
+
+            <!-- Summary -->
+            <div class="card">
+                <h2>Financial Overview</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+
+                    <div class="result-card">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">TOTAL SPENT</div>
+                        <div class="result-val val-neg" id="val-expenses">$0.00</div>
+                    </div>
+
+                    <div class="result-card">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">REMAINING</div>
+                        <div class="result-val" id="val-remaining">$0.00</div>
+                    </div>
+
+                    <div class="result-card"
+                        style="grid-column: 1 / -1; background: rgba(35,134,54,0.1); border-color: var(--accent-color);">
+                        <div style="font-size: 0.8rem; color: var(--accent-color);">PROJECTED SAVINGS</div>
+                        <div class="result-val val-pos" id="val-savings">$0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History -->
+            <div class="card" style="flex: 1;">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                    <h2 style="border: none; margin: 0;">Transaction History</h2>
+                    <button onclick="clearHistory()"
+                        style="background: none; border: none; color: var(--danger-color); font-size: 0.8rem; cursor: pointer;">Clear
+                        All</button>
+                </div>
+                <div class="history-list" id="history-list">
+                    <!-- JS Injects Here -->
+                    <div style="text-align: center; color: var(--text-secondary); padding: 2rem;">No transactions this
+                        month.</div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
     <script>
-        function calculate() {
-            // Get Income & Savings
-            const salary = parseFloat(document.getElementById('monthly-salary').value) || 0;
-            const currentSavings = parseFloat(document.getElementById('current-savings').value) || 0;
+        // --- CONSTANTS & STATE ---
+        const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let userProfile = JSON.parse(localStorage.getItem('userProfile')) || { salary: 0, savings: 0 };
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-            // Get All Expenses
-            const expenseInputs = document.querySelectorAll('.expense-input');
-            let totalExpenses = 0;
-            expenseInputs.forEach(input => {
-                totalExpenses += parseFloat(input.value) || 0;
-            });
+        // --- INIT ---
+        window.onload = function () {
+            initLogin();
+            initMonthSelector();
+            loadProfile();
+            renderHistory();
+        }
 
-            // Calculate Results
-            const remaining = salary - totalExpenses;
-            const newSavings = currentSavings + remaining;
+        // --- LOGIN SYSTEM ---
+        function initLogin() {
+            if (isLoggedIn) {
+                document.getElementById('login-overlay').classList.add('hidden');
+            }
+        }
 
-            // Update UI
-            document.getElementById('total-expenses').innerText = formatCurrency(totalExpenses);
-
-            const remainingElement = document.getElementById('remaining-salary');
-            remainingElement.innerText = formatCurrency(remaining);
-            if (remaining >= 0) {
-                remainingElement.classList.remove('value-negative');
-                remainingElement.classList.add('value-positive');
+        function attemptLogin() {
+            const pin = document.getElementById('login-password').value;
+            // Demo PIN logic - in real app would use secure auth
+            if (pin === "1234" || pin === "") { // Allowing empty for ease of demo if user forgets
+                const remember = document.getElementById('remember-me').checked;
+                if (remember) {
+                    localStorage.setItem('isLoggedIn', 'true');
+                }
+                document.getElementById('login-overlay').classList.add('hidden');
             } else {
-                remainingElement.classList.remove('value-positive');
-                remainingElement.classList.add('value-negative');
+                document.getElementById('login-error').style.display = 'block';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            location.reload();
+        }
+
+        // --- MONTH SELECTOR ---
+        function initMonthSelector() {
+            const selector = document.getElementById('month-selector');
+            const currentMonthIndex = new Date().getMonth();
+
+            MONTHS.forEach((m, index) => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.innerText = m;
+                if (index === currentMonthIndex) opt.selected = true;
+                selector.appendChild(opt);
+            });
+        }
+
+        // --- PROFILE ---
+        function loadProfile() {
+            document.getElementById('salary-input').value = userProfile.salary || '';
+            document.getElementById('savings-input').value = userProfile.savings || '';
+        }
+
+        function updateProfile() {
+            userProfile.salary = parseFloat(document.getElementById('salary-input').value) || 0;
+            userProfile.savings = parseFloat(document.getElementById('savings-input').value) || 0;
+            localStorage.setItem('userProfile', JSON.stringify(userProfile));
+            renderHistory(); // Re-calc totals
+        }
+
+        // --- UI LOGIC ---
+        function handleCategoryChange() {
+            const cat = document.getElementById('trans-category').value;
+            const subWrapper = document.getElementById('sub-category-wrapper');
+            const descWrapper = document.getElementById('custom-desc-wrapper');
+            const subSelect = document.getElementById('trans-subcategory');
+            const descInput = document.getElementById('trans-desc');
+
+            // Reset visibilities
+            subWrapper.classList.add('hidden');
+            descWrapper.classList.add('hidden');
+
+            if (cat === 'Food') {
+                subWrapper.classList.remove('hidden');
+            } else if (cat === 'Others') {
+                descWrapper.classList.remove('hidden');
+            }
+        }
+
+        // --- TRANSACTIONS ---
+        function addTransaction(overrideCategory = null, overrideDesc = null, overrideAmount = null) {
+            const selectedMonth = document.getElementById('month-selector').value;
+            let category = overrideCategory || document.getElementById('trans-category').value;
+            let amount = overrideAmount || parseFloat(document.getElementById('trans-amount').value);
+            let description = overrideDesc || category;
+
+            if (!amount || amount <= 0) return alert("Please enter a valid amount.");
+
+            // Handle Custom logic
+            if (!overrideCategory) {
+                if (category === 'Food') {
+                    description = document.getElementById('trans-subcategory').value;
+                } else if (category === 'Others') {
+                    const customDesc = document.getElementById('trans-desc').value.trim();
+                    if (customDesc) description = customDesc;
+                }
             }
 
-            document.getElementById('new-savings').innerText = formatCurrency(newSavings);
+            const newTrans = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString(),
+                month: selectedMonth,
+                category: category,
+                description: description,
+                amount: amount
+            };
 
-            // Update small displays
-            document.getElementById('display-salary').innerText = formatCurrency(salary);
-            document.getElementById('display-initial-savings').innerText = formatCurrency(currentSavings);
+            transactions.unshift(newTrans); // Add to top
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+
+            // Clear inputs
+            document.getElementById('trans-amount').value = '';
+            document.getElementById('trans-desc').value = '';
+
+            renderHistory();
         }
 
-        function formatCurrency(value) {
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD'
-            }).format(value);
+        function renderHistory() {
+            const selectedMonth = document.getElementById('month-selector').value;
+            const listContainer = document.getElementById('history-list');
+
+            // Filter
+            const filtered = transactions.filter(t => t.month === selectedMonth);
+
+            // Totals
+            let totalSpent = 0;
+
+            // Render List
+            listContainer.innerHTML = '';
+            if (filtered.length === 0) {
+                listContainer.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 2rem;">No transactions this month.</div>';
+            } else {
+                filtered.forEach(t => {
+                    totalSpent += parseFloat(t.amount);
+
+                    const el = document.createElement('div');
+                    el.className = 'history-item expense';
+                    el.innerHTML = `
+                        <div class="history-info">
+                            <span class="history-cat">${t.category}</span>
+                            <span class="history-desc">${t.description} • ${t.date}</span>
+                        </div>
+                        <span class="history-amount">-$${parseFloat(t.amount).toFixed(2)}</span>
+                    `;
+                    listContainer.appendChild(el);
+                });
+            }
+
+            // Update Summary Cards
+            updateSummary(totalSpent);
         }
+
+        function updateSummary(totalSpent) {
+            const salary = userProfile.salary;
+            const currentSavings = userProfile.savings;
+            const remaining = salary - totalSpent;
+            const newSavings = currentSavings + remaining;
+
+            document.getElementById('val-expenses').innerText = formatCurrency(totalSpent);
+
+            const remEl = document.getElementById('val-remaining');
+            remEl.innerText = formatCurrency(remaining);
+            remEl.className = remaining >= 0 ? 'result-val val-pos' : 'result-val val-neg';
+
+            document.getElementById('val-savings').innerText = formatCurrency(newSavings);
+        }
+
+        function clearHistory() {
+            if (confirm("Are you sure you want to clear all transactions?")) {
+                transactions = [];
+                localStorage.setItem('transactions', JSON.stringify([]));
+                renderHistory();
+            }
+        }
+
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+        }
+
+        // --- OCR LOGIC ---
+        function processOCR(input) {
+            const statusDiv = document.getElementById('ocr-status');
+            if (input.files && input.files[0]) {
+                const img = input.files[0];
+                statusDiv.innerText = "Scanning image... Please wait.";
+
+                Tesseract.recognize(
+                    img,
+                    'eng',
+                    { logger: m => statusDiv.innerText = `Scanning: ${Math.round(m.progress * 100)}%` }
+                ).then(({ data: { text } }) => {
+                    console.log("OCR Text:", text);
+                    parseStatementText(text);
+                    statusDiv.innerText = "Scan Complete! Transactions added.";
+                }).catch(err => {
+                    console.error(err);
+                    statusDiv.innerText = "Error scanning image.";
+                });
+            }
+        }
+
+        function parseStatementText(text) {
+            // Regex to find negative amounts: "-$50.00" or "-50.00"
+            // Captures the number part.
+            // Note: OCR might output "- 50.00" with space.
+            const regex = /-\s?\$?\s?(\d+(?:\.\d{1,2})?)/g;
+            let match;
+            let count = 0;
+
+            while ((match = regex.exec(text)) !== null) {
+                const amount = parseFloat(match[1]);
+                if (amount > 0) {
+                    addTransaction('Others', 'Imported Statement (OCR)', amount);
+                    count++;
+                }
+            }
+
+            if (count === 0) {
+                alert("No negative expenditures found in this image.");
+            } else {
+                alert(`Successfully imported ${count} transactions from statement!`);
+            }
+        }
+
     </script>
 </body>
 
