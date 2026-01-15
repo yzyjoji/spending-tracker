@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Spending Tracker | Premium Finance Tool</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --input-bg: #21262d;
+            --border-color: #30363d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent-color: #238636;
+            /* Green for saving */
+            --accent-hover: #2ea043;
+            --danger-color: #da3633;
+            /* Red for spending */
+            --glass-bg: rgba(22, 27, 34, 0.7);
+            --glass-border: rgba(48, 54, 61, 0.5);
+            --neon-glow: 0 0 10px rgba(35, 134, 54, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background-image: radial-gradient(circle at 10% 20%, rgba(35, 134, 54, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(31, 111, 235, 0.05) 0%, transparent 40%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Glassmorphism Card Style */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        h1,
+        h2 {
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #fff, #8b949e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper span {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2rem;
+            /* Left padding for currency symbol */
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(35, 134, 54, 0.1);
+        }
+
+        /* Results Section */
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .result-card {
+            background-color: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .result-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .value-positive {
+            color: var(--accent-color);
+            text-shadow: var(--neon-glow);
+        }
+
+        .value-negative {
+            color: var(--danger-color);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Monthly Spending Tracker</h1>
+
+        <!-- LEFT COLUMN: INPUTS -->
+        <div class="card inputs-column">
+            <h2>Income & Savings</h2>
+            <div class="input-group">
+                <label for="monthly-salary">Monthly Salary</label>
+                <div class="input-wrapper">
+                    <span>$</span>
+                    <input type="number" id="monthly-salary" placeholder="0.00" oninput="calculate()">
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="current-savings">Current Savings</label>
+                <div class="input-wrapper">
+                    <span>$</span>
+                    <input type="number" id="current-savings" placeholder="0.00" oninput="calculate()">
+                </div>
+            </div>
+
+            <h2 style="margin-top: 2rem;">My Spendings</h2>
+
+            <div class="input-group">
+                <label for="expense-rent">Rent</label>
+                <div class="input-wrapper">
+                    <span>$</span>
+                    <input type="number" class="expense-input" id="expense-rent" placeholder="0.00"
+                        oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="expense-food">Food</label>
+                <div class="input-wrapper">
+                    <span>$</span>
+                    <input type="number" class="expense-input" id="expense-food" placeholder="0.00"
+                        oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="expense-transport">Transportation</label>
+                <div class="input-wrapper">
+                    <span>$</span>
+                    <input type="number" class="expense-input" id="expense-transport" placeholder="0.00"
+                        oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="expense-subs">Subscriptions</label>
+                <div class="input-wrapper">
+                    <span>$</span>
+                    <input type="number" class="expense-input" id="expense-subs" placeholder="0.00"
+                        oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="expense-bills">Electricity/Bills</label>
+                <div class="input-wrapper">
+                    <span>$</span>
+                    <input type="number" class="expense-input" id="expense-bills" placeholder="0.00"
+                        oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="expense-entertainment">Entertainment</label>
+                <div class="input-wrapper">
+                    <span>$</span>
+                    <input type="number" class="expense-input" id="expense-entertainment" placeholder="0.00"
+                        oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="expense-others">Others</label>
+                <div class="input-wrapper">
+                    <span>$</span>
+                    <input type="number" class="expense-input" id="expense-others" placeholder="0.00"
+                        oninput="calculate()">
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: RESULTS -->
+        <div class="card results-column">
+            <h2>Financial Overview</h2>
+            <div class="results-section">
+
+                <div class="result-card">
+                    <div class="result-label">Total Expenses</div>
+                    <div class="result-value value-negative" id="total-expenses">$0.00</div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-label">Remaining from Salary</div>
+                    <div class="result-value" id="remaining-salary">$0.00</div>
+                </div>
+
+                <div class="result-card"
+                    style="border-color: var(--accent-color); background: rgba(35, 134, 54, 0.05);">
+                    <div class="result-label" style="color: var(--accent-color);">New Total Savings</div>
+                    <div class="result-value value-positive" id="new-savings">$0.00</div>
+                </div>
+
+                <div class="summary-grid">
+                    <div class="result-card">
+                        <div class="result-label">Salary</div>
+                        <div class="result-value" id="display-salary" style="font-size: 1.25rem;">$0.00</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Initial Savings</div>
+                        <div class="result-value" id="display-initial-savings" style="font-size: 1.25rem;">$0.00</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            // Get Income & Savings
+            const salary = parseFloat(document.getElementById('monthly-salary').value) || 0;
+            const currentSavings = parseFloat(document.getElementById('current-savings').value) || 0;
+
+            // Get All Expenses
+            const expenseInputs = document.querySelectorAll('.expense-input');
+            let totalExpenses = 0;
+            expenseInputs.forEach(input => {
+                totalExpenses += parseFloat(input.value) || 0;
+            });
+
+            // Calculate Results
+            const remaining = salary - totalExpenses;
+            const newSavings = currentSavings + remaining;
+
+            // Update UI
+            document.getElementById('total-expenses').innerText = formatCurrency(totalExpenses);
+
+            const remainingElement = document.getElementById('remaining-salary');
+            remainingElement.innerText = formatCurrency(remaining);
+            if (remaining >= 0) {
+                remainingElement.classList.remove('value-negative');
+                remainingElement.classList.add('value-positive');
+            } else {
+                remainingElement.classList.remove('value-positive');
+                remainingElement.classList.add('value-negative');
+            }
+
+            document.getElementById('new-savings').innerText = formatCurrency(newSavings);
+
+            // Update small displays
+            document.getElementById('display-salary').innerText = formatCurrency(salary);
+            document.getElementById('display-initial-savings').innerText = formatCurrency(currentSavings);
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(value);
+        }
+    </script>
+</body>
+
+</html>
